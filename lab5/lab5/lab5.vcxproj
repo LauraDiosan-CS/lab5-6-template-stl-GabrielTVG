@@ -140,10 +140,17 @@
   <ItemGroup>
     <ClInclude Include="..\Aplicatie.h" />
     <ClInclude Include="..\Repository.h" />
+    <ClInclude Include="..\Service.h" />
+    <ClInclude Include="..\test.h" />
+    <ClInclude Include="..\UI.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Aplicatie.cpp" />
+    <ClCompile Include="..\App.cpp" />
+    <ClCompile Include="..\Repository.cpp" />
+    <ClCompile Include="..\Service.cpp" />
     <ClCompile Include="..\test.cpp" />
+    <ClCompile Include="..\UI.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
