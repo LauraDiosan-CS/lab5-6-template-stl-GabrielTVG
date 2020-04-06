@@ -26,12 +26,42 @@ void UI::citireRAM()
 	}
 	cout << endl;
 }
+
+void UI::modele()
+{
+	Aplicatie a("Model1", 1, 1);
+	Aplicatie b("Model2", 2, 2);
+	Aplicatie c("Model3", 3, 1);
+	if (a.getConsumMemorie() + memorieRAM <= RAM)
+	{
+		ser.adaugareElement(a);
+		memorieRAM += a.getConsumMemorie();
+	}
+	else
+	{
+		a.setStatus(2);
+		ser.adaugareElement(a);
+		memorieHDD += a.getConsumMemorie();
+	}
+	ser.adaugareElement(b);
+	if (c.getConsumMemorie() + memorieRAM <= RAM)
+	{
+		ser.adaugareElement(c);
+		memorieRAM += c.getConsumMemorie();
+	}
+	else
+	{
+		c.setStatus(2);
+		ser.adaugareElement(c);
+		memorieHDD += c.getConsumMemorie();
+	}
+}
 void UI::adaugareAplicatie()
 {
 	map<int, Aplicatie> all = ser.getEverything();
 	map<int, Aplicatie>::iterator it;
 	cout << "Dati date despre aplicatie"<<endl;
-	int status, memorie, ok = 1;
+	int status, memorie, ok = 1,pozitie=0;
 	char* nume = new char[20];
 
 	while (ok)
@@ -76,9 +106,9 @@ void UI::adaugareAplicatie()
 			ok = 1;
 		}
 	}
-	if (status == 1 && (memorieRAM + memorie > RAM))
+	if (status == 1 && memorie > RAM)
 	{
-		cout << "Memoria utilizata este prea mare, aplicatia va fi mutata in swap!";
+		cout << "Memoria utilizata de aplicatie este prea mare, aplicatia va fi mutata in swap!"<<endl;
 		status = 2;
 		memorieHDD += memorie;
 	}
@@ -86,6 +116,31 @@ void UI::adaugareAplicatie()
 		if (status == 1 && (memorieRAM + memorie <= RAM))
 			memorieRAM += memorie;
 		else
+			if (status == 1 && memorieRAM + memorie > RAM)
+			{
+				map<int, Aplicatie> all = ser.getEverything();
+				map<int, Aplicatie>::iterator it = all.begin();
+				while (memorieRAM + memorie > RAM)
+				{
+					it = all.find(pozitie);
+					if (it != all.end() && it->second.getStatus() == 1)
+					{
+						Aplicatie b(it->second.getName(), it->second.getConsumMemorie(), 2);
+						ser.updateElement(pozitie,b);
+						memorieHDD += it->second.getConsumMemorie();
+						memorieRAM -= it->second.getConsumMemorie();
+						cout << "Stare initiala: " << endl;
+						cout << "Cheia: " << it->first << ' ' << it->second << endl;
+						cout << "Stare actuala: " << endl;
+						cout << "Cheia: " << pozitie << " " << b << endl;
+						cout << "Memorie ram utilizata acuma: " << RAM - memorieRAM << " " << endl;
+					}
+					pozitie++;
+				}
+				memorieRAM += memorie;
+				cout << "Aplicatie adaugata. Memorie ram utilizata acuma: " << RAM - memorieRAM << " "<<endl;
+			}
+			else
 			if (status == 2)
 				memorieHDD += memorie;
 	Aplicatie a(nume, memorie, status);
@@ -219,7 +274,7 @@ void UI::gasireAplicatie()
 
 void UI::stergereAplicatie()
 {
-	int pozitie,memorieVeche,statusVechi;
+	int pozitie, memorieVeche, statusVechi, pozitieAp = 0;
 	map<int, Aplicatie> all = ser.getEverything();
 	map<int, Aplicatie>::iterator it;
 	cout << "Introduceti pozitia in mapa al aplicatiei care o stergem: ";
@@ -227,12 +282,34 @@ void UI::stergereAplicatie()
 	it = all.find(pozitie);
 	memorieVeche = it->second.getConsumMemorie();
 	statusVechi = it->second.getStatus();
-	if (statusVechi == 1)
-		memorieRAM -= memorieVeche;
-	else
-		memorieHDD -= memorieVeche;
 	ser.stergereElement(pozitie);
 	cout << "Aplicatie stearsa!" << endl;
+	if (statusVechi == 1)
+	{
+		memorieRAM -= memorieVeche;
+		map<int, Aplicatie> all = ser.getEverything();
+		map<int, Aplicatie>::iterator it = all.begin();
+		while (memorieRAM <= RAM && pozitieAp<ser.getSize())
+		{
+			it = all.find(pozitieAp);
+			if (it != all.end() && it->second.getStatus() == 2 && memorieRAM+it->second.getConsumMemorie()<=RAM)
+			{
+				Aplicatie b(it->second.getName(), it->second.getConsumMemorie(), 1);
+				ser.updateElement(pozitieAp, b);
+				memorieHDD -= it->second.getConsumMemorie();
+				memorieRAM += it->second.getConsumMemorie();
+				cout << "Stare initiala: " << endl;
+				cout << "Cheia: " << it->first << ' ' << it->second << endl;
+				cout << "Stare actuala: " << endl;
+				cout << "Cheia: " << pozitieAp << " " << b << endl;
+				cout << "Memorie ram utilizata acuma: " << RAM - memorieRAM << " " << endl;
+			}
+			pozitieAp++;
+		}
+	}
+	else
+		if (statusVechi == 2)
+		memorieHDD -= memorieVeche;
 	cout << endl;
 }
 

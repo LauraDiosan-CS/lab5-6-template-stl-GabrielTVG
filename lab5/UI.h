@@ -10,6 +10,7 @@ private:
 public:
 	UI();
 	void citireRAM();
+	void modele();
 	void adaugareAplicatie();
 	void afisareAplicatie();
 	void updateAplicatie();

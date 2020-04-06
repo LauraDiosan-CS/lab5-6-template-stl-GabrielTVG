@@ -12,6 +12,7 @@ int main()
 	testareUpdate();
 	cout << "gj"<<endl;
 	ui.citireRAM();
+	ui.modele();
 	cout << endl;
 	while (ok)
 	{
